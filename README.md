@@ -21,7 +21,7 @@ This project features a **FastAPI** backend that scrapes provider APIs for real-
 * **Monthly Statistics Engine**:
   * Automatically aggregates raw hourly logs into monthly usage statistics.
   * Tracks Average Daily Usage, total consumption, and Peak Usage Days.
-  * Includes a **25-Day Guard** to ensure statistics are only generated for full, accurate months—preventing skewed or partial data representations.
+  * Includes **Smart Dynamic Thresholding**: The system adapts to the calendar, requiring only ~30% of the elapsed month's data to generate statistics, so you get early insights without waiting for month-end.
 * **Telegram Bot Integration (Bypass Built-In)**:
   * Full Telegram bot support, routed specifically through a Cloudflare proxy to bypass Hugging Face's strict outgoing DNS blocks on `api.telegram.org` and `*.workers.dev`.
   * Send `/status` to get a full readout of all tracked accounts.
@@ -105,7 +105,7 @@ npm run dev
    * Enter the **My WE** account password (not the router Wi-Fi password).
 3. **Monitor Dashboards**: 
    * **Dashboard Tab**: View real-time quota data securely caching in the background. Look out for the red/yellow alerts.
-   * **Statistics Tab**: View historical month-over-month usage trends. (Data will appear automatically after ~25 days of usage tracking).
+   * **Statistics Tab**: View historical month-over-month usage trends. (Data will appear automatically within a few days of usage tracking, scaling dynamically).
 
 ## 🔌 API Documentation
 
