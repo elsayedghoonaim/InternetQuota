@@ -39,6 +39,17 @@ class TelegramBotPoller:
             logger.warning("Telegram bot not configured — polling disabled.")
             return
 
+        # Delete any existing webhook to ensure getUpdates (polling) works
+        try:
+            url = f"{TELEGRAM_API_URL}/bot{self.bot_token}/deleteWebhook"
+            resp = requests.post(url, timeout=10)
+            if resp.ok and resp.json().get("ok"):
+                logger.info("🗑️ Webhook deleted successfully for polling.")
+            else:
+                logger.warning(f"⚠️ Failed to delete webhook: {resp.text}")
+        except Exception as e:
+            logger.error(f"Error deleting webhook: {e}")
+
         self._running = True
         self._thread = threading.Thread(target=self._poll_loop, daemon=True)
         self._thread.start()
