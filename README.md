@@ -1,85 +1,83 @@
+# 🌐 Internet Quota Manager
+
+A full-stack application to track and manage internet quota usage across multiple accounts. Built with a **FastAPI** backend, **MongoDB** for history storage, and a **React + Vite** frontend for real-time monitoring.
+
+> Designed to run on [Hugging Face Spaces](https://huggingface.co/spaces) (free tier) with Docker, but works on any server.
+
 ---
-title: Internet Quota
-emoji: 📚
-colorFrom: green
-colorTo: purple
-sdk: docker
-pinned: false
+
+## 🚀 Features
+
+- **Multi-Account Dashboard** — Track multiple Landline (VDSL/Fiber) and Mobile (4G/Air) lines in one interface.
+- **Live Auto-Refresh** — Dashboard polls the backend every 5 minutes with a live "last updated" indicator.
+- **Background Scheduler** — Hourly background jobs silently refresh all accounts without manual intervention.
+- **Monthly Statistics Engine**:
+  - Aggregates raw hourly logs into monthly usage reports.
+  - Tracks Average Daily Usage, Total Consumption, and Peak Usage Days.
+  - Smart Dynamic Thresholding: generates early insights using ~30% of elapsed month data.
+- **Telegram Bot Integration**:
+  - Send `/status` — full readout of all tracked accounts.
+  - Send `/start` — summary of accounts running low on quota.
+  - Automatic alerts every 6 hours for accounts below the 10% threshold.
+- **Desktop Notifications** — Browser-native alerts when quota drops below 10%.
+
 ---
-
-# Internet Quota Manager
-
-A robust, full-stack application designed to track and manage internet quotas for **WE (Telecom Egypt)** Landline and Mobile (WE Air/4G) accounts.
-
-This project features a **FastAPI** backend that scrapes provider APIs for real-time usage data, stores history in **MongoDB**, and serves a modern **React + Vite** frontend for monitoring multiple accounts simultaneously. It is explicitly designed and optimized to run on the **Hugging Face Spaces** free tier, bypassing common network restrictions.
-
-## 🚀 Key Features
-
-* **Multi-Account Dashboard**: Track multiple Landline (VDSL/Fiber) and WE Air (4G) lines in one clean interface.
-* **Live Auto-Refresh**: The dashboard automatically polls the backend every 5 minutes to ensure your internet data is never stale, complete with a live "last updated" visual indicator.
-* **Smart Data Collection & Caching**: A background scheduler securely updates quotas hourly to minimize API spam. Only raw credentials are required.
-* **Monthly Statistics Engine**:
-  * Automatically aggregates raw hourly logs into monthly usage statistics.
-  * Tracks Average Daily Usage, total consumption, and Peak Usage Days.
-  * Includes **Smart Dynamic Thresholding**: The system adapts to the calendar, requiring only ~30% of the elapsed month's data to generate statistics, so you get early insights without waiting for month-end.
-* **Telegram Bot Integration (Bypass Built-In)**:
-  * Full Telegram bot support, routed specifically through a Cloudflare proxy to bypass Hugging Face's strict outgoing DNS blocks on `api.telegram.org` and `*.workers.dev`.
-  * Send `/status` to get a full readout of all tracked accounts.
-  * Send `/start` to get a quick summary of ONLY the accounts that are running low.
-  * Automatic alerts are dispatched every 6 hours for accounts dipping below the 10% threshold.
-* **Desktop Notifications**: Instant browser-native notification alerts when quota drops below 10%.
 
 ## 🛠️ Tech Stack
 
-### Backend
-* **Framework**: FastAPI (Python 3.10)
-* **Database**: MongoDB (via `pymongo`)
-* **Scheduling**: APScheduler (Background jobs running hourly and daily)
-* **Network**: Direct HTTP request patching to bypass HF DNS limitations.
+| Layer     | Technology                                      |
+|-----------|-------------------------------------------------|
+| Backend   | FastAPI (Python 3.10), APScheduler, pymongo     |
+| Database  | MongoDB (Atlas or local)                        |
+| Frontend  | React 18, Vite, Tailwind CSS, Lucide React      |
+| Deployment| Docker, Hugging Face Spaces (port 7860)         |
 
-### Frontend
-* **Build Tool**: Vite
-* **Framework**: React 18
-* **Styling**: Tailwind CSS
-* **Icons**: Lucide React
+---
 
 ## 📋 Prerequisites
 
-* **Docker** (for containerized deployment)
-* **MongoDB Atlas** URI or a local MongoDB instance.
-* **Telegram Bot Token & Chat ID** (optional, for notifications)
-* **Cloudflare Worker URL** (optional, a default proxy is provided for Telegram)
+- **Docker** (recommended for deployment)
+- **MongoDB Atlas** URI or a local MongoDB instance
+- **Telegram Bot Token & Chat ID** *(optional, for notifications)*
+- **Cloudflare Worker URL** *(optional, for Telegram proxy — required on Hugging Face Spaces)*
 
-## ⚙️ Installation & Setup
+---
+
+## ⚙️ Setup
 
 ### 1. Environment Variables
 
-Create a `.env` file in the `backend/` directory or add these as Secrets in your deployment environment (like Hugging Face Space Settings):
+Create a `.env` file in the `backend/` directory:
 
 ```env
-ADMIN_USERNAME=your_admin_user
+ADMIN_USERNAME=your_admin_username
 ADMIN_PASSWORD=your_admin_password
-MONGO_URI=mongodb+srv://...
+MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/
+MONGO_DB_NAME=internet_quota_db
 TELEGRAM_BOT_TOKEN=your_bot_token
 TELEGRAM_CHAT_ID=your_chat_id
-# Optional: TELEGRAM_API_URL=https://your-cloudflare-worker.workers.dev
+TELEGRAM_API_URL=https://your-cloudflare-worker.workers.dev   # Required on HF Spaces
 ```
 
-### 2. Running with Docker (Recommended)
+> ⚠️ Never commit your `.env` file. It is already listed in `.gitignore`.
 
-The project includes a `Dockerfile` optimized for Hugging Face Spaces (port 7860).
+---
+
+### 2. Run with Docker *(Recommended)*
 
 ```bash
 # Build the image
-docker build -t internet-quota-backend .
+docker build -t internet-quota .
 
 # Run the container
-docker run -p 7860:7860 --env-file backend/.env internet-quota-backend
+docker run -p 7860:7860 --env-file backend/.env internet-quota
 ```
 
-*The UI and API will be available at `http://localhost:7860`.*
+The app will be available at `http://localhost:7860`.
 
-### 3. Running Locally (Manual)
+---
+
+### 3. Run Locally *(Manual)*
 
 **Backend:**
 ```bash
@@ -95,24 +93,64 @@ npm install
 npm run dev
 ```
 
+---
+
 ## 📖 Usage
 
-1. **Login**: Access the frontend UI and log in using the `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
-2. **Add Account**:
-   * Click the **"Add"** button.
-   * Select **Landline** or **WE Air**.
-   * Enter the service number (e.g., `024...` for landline or `015...` for mobile).
-   * Enter the **My WE** account password (not the router Wi-Fi password).
-3. **Monitor Dashboards**: 
-   * **Dashboard Tab**: View real-time quota data securely caching in the background. Look out for the red/yellow alerts.
-   * **Statistics Tab**: View historical month-over-month usage trends. (Data will appear automatically within a few days of usage tracking, scaling dynamically).
+1. **Login** — Open the UI and sign in with your `ADMIN_USERNAME` and `ADMIN_PASSWORD`.
+2. **Add an Account**:
+   - Click **"Add"**.
+   - Select the account type: **Landline** or **Mobile**.
+   - Enter the service number and account password from your ISP portal.
+3. **Dashboard Tab** — View live quota data. Red/yellow indicators highlight low-quota accounts.
+4. **Statistics Tab** — View month-over-month usage trends. Data appears automatically within a few days of tracking.
 
-## 🔌 API Documentation
+---
 
-Once the backend is running, full interactive documentation (Swagger UI) is available at:
-`http://localhost:7860/docs`
+## 🔌 API Docs
 
-## 🛡️ Security Note
+Interactive Swagger UI is available at:
 
-* **Access**: The API and internal endpoints are protected by HTTP Basic Auth. The frontend handles authentication tokens locally.
-* **Credentials**: My WE passwords are required to fetch data from the provider. Store your `MONGO_URI` securely.
+```
+http://localhost:7860/docs
+```
+
+---
+
+## 🛡️ Security
+
+- All API routes are protected with **HTTP Basic Auth**.
+- Credentials (`MONGO_URI`, `ADMIN_PASSWORD`, `TELEGRAM_BOT_TOKEN`) are loaded from environment variables — never hardcoded.
+- Account passwords are stored in MongoDB and only used to fetch live data from the ISP portal.
+
+---
+
+## 📁 Project Structure
+
+```
+.
+├── backend/
+│   ├── main.py              # FastAPI app & routes
+│   ├── database.py          # MongoDB connection
+│   ├── models.py            # Pydantic models
+│   ├── requirements.txt
+│   └── services/
+│       ├── scheduler.py     # APScheduler jobs
+│       ├── landline.py      # Landline quota fetcher
+│       ├── mobile.py        # Mobile quota fetcher
+│       ├── statistics.py    # Monthly stats pipeline
+│       ├── notifications.py # Telegram alerts
+│       └── telegram_bot.py  # Bot command handlers
+├── frontend/
+│   ├── src/
+│   └── ...
+├── Dockerfile
+└── README.md
+```
+
+---
+
+## 📄 License
+
+MIT License — free to use, modify, and deploy.
+```
