@@ -9,7 +9,7 @@ import concurrent.futures
 # We manually resolve the Telegram proxy to Cloudflare's Anycast IP to bypass this
 _orig_getaddrinfo = socket.getaddrinfo
 def _patched_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
-    if host == 'wandering-term-3347.elsayedghonaim21.workers.dev':
+    if host == '':
         return _orig_getaddrinfo('104.21.18.196', port, family, type, proto, flags)
     return _orig_getaddrinfo(host, port, family, type, proto, flags)
 socket.getaddrinfo = _patched_getaddrinfo
